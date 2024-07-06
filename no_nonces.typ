@@ -1004,10 +1004,10 @@ Now we can define a security game for finding solutions to a set of constraints 
 The adversary #Att gets access to the constraints $CC$ of dimension $d$,
 a description of the space $Fixing_0$ and the oracle $H$.
 Then the game randomly samples a #ii in #Vp and passes it to #Att.
-This vector represents the input to a Linicrypt program. 
-It wins the game when it can output a $vv in sol(CC)$ with $vv - ii in ker(Fixing_0)$.
+This vector represents the input to a Linicrypt program.
+It wins the game by outputting a $vv in sol(CC)$ with $vv - ii in ker(Fixing_0)$.
 
-The probability of #Att winning at this game is written as $SolAdv[Att, CC, Fixing_0]$.
+The probability of #Att winning this game is written as $SolAdv[Att, CC, Fixing_0]$.
 
 A useful fact is that we can avoid working with $Fixing_0$ because of the following proposition.
 
@@ -1016,42 +1016,143 @@ A useful fact is that we can avoid working with $Fixing_0$ because of the follow
   We define the embedding map $LL: ker(Fixing_0) arrow.hook Vp$.
   Then the following are equivalent:
   1. #C is solvable fixing $Fixing_0$
-  2. $CC LL$ is solvable with $|CC LL| = CC$
+  2. $|CC LL| = |CC|$ and $CC LL$ is solvable (fixing ${0}$)
 ]
+
+In Linicrypt program terms,
+this proposition relates a Linicrypt program with its corresponding inputless Linicrypt program where all inputs are set to 0.
 
 #proof[
-  Lets prove
-  
-  We will first prove some useful facts:
-  1. $LL^*$ cannot collapse any constraints so every ordering of #C gives an ordering $CC LL$ and vice versa.
-  2. Let $CC = (c_1, ..., c_n)$ and $CC LL = (c_1 LL, ..., c_n LL)$.
-    Then we get the sequences of spaces $Fixing_i$ and $Fixing'_i$ from the definition of solvability.
-    We have $Fixing'_i = Fixing_i LL$.
+  We define #C, $Fixing_0$, and $LL$ as in the proposition statement.
+  #remark[
+    The linear map $LL$ induces corresponding map on the dual spaces $LL^*: Vd -> (ker(Fixing_0)^*)$.
+    With a bit of abuse of notation, we can extend this map $LL^*$ to act on constraints.
+    Constraints are tuples of matrices.
+    The rows of the matrices are in $Vd$,
+    so we can let $LL^*$ act on these structures elementwise.
+    Then $LL^* ((QQ, aa)) = (QQ LL, aa LL)$.
 
-  TODO: Shit I already need a solution ordering here.
+    TODO: This is useful in multiple places, so it should be discussed outside this proof.
+  ]
 
-  To prove fact 1. we assume $c_i LL = c_j LL$ for an $i <j$.
-  This implies in particular that $0 = (a_i - a_j)LL ww$ for all $ww in ker(Fixing_0)$.
-  Therefore $ker(Fixing_0) subset.eq ker(a_i - a_j)$.
-  It follows that $a_i - a_j in Fixing_0$ and $a_j in Fixing_0 + span(a_i)$.
-  This directly contradicts with the assumption 
+  We will first prove a useful fact.
+  Let $CC = (c_1, ..., c_n)$ be an ordering and $CC LL = (c_1 LL, ..., c_n LL)$ the corresponding ordering.
+  Regardless of whether the solvability condition is fulfilled,
+  we can define the sequence of subspaces $Fixing_i$ from the ordering of $CC$ and $Fixing'_i$ from the ordering of $CC LL$.
+  We set $Fixing'_0 = LL^*(Fixing_0) = {0}$.
+  Then we have $Fixing'_i = LL^*(Fixing_i)$ by the following inductive argument:
+  $
+    Fixing'_i &= Fixing'_(i-1) + span(c_i LL) \
+    &= LL^*(Fixing_(i-1)) + span(c_i LL) \
+    &= LL^*(Fixing_(i-1) + span(c_i)) \
+    &= LL^*(Fixing_i)
+  $
 
-  We first assume $CC LL$ has a solution ordering $(c_i LL, ..., c_n LL)$.
+
+  We first assume $CC LL$ has a solution ordering $CC LL = (c_1 LL, ..., c_n LL)$.
+  This is a well-defined ordering because $LL$ didn't collapse any constraints by $|CC LL| = |CC|$.
+  // We can view this as a bijective map $phi: CC LL <-> [n]$.
+  // Take the induced map $LL^*: CC -> CC LL$.
+  // Because of $|CC LL| = |CC|$ this is a bijection.
+  // When we take the concatenation $LL^* compose phi$ we get an ordering of $CC$,
+  // i.e. $CC = (c_1, ..., c_n)$.
+  This gives us the ordering $CC = (c_1, ..., c_n)$.
+  Assume towards a contradiction that there is an $i$ with $aa_i in Fixing_(i-1) + span(QQ_i)$.
+  We can apply $LL^*$ to this equation to get
+  $
+    aa_i LL in Fixing'_(i-1) + span(QQ_i LL),
+  $
+  a contradiction with the assumed solution ordering of $CC LL$.
+
+  Now we prove the reverse direction and assume $CC$ is solvable fixing $Fixing_0$ with ordering $(c_1, ..., c_n)$.
+  First, we show that $|CC| = |CC LL|$.
+  Assume $c_i LL = c_j LL$ for an $i <j$.
+  This implies in particular that $0 = (aa_i - aa_j)LL ww$ for all $ww in ker(Fixing_0)$.
+  Therefore $ker(Fixing_0) subset.eq ker(aa_i - aa_j)$.
+  It follows that $aa_i - aa_j in Fixing_0$ and $aa_j in Fixing_0 + span(aa_i)$.
+  This directly contradicts with the solvability condition $aa_j in.not Fixing_(j-i) + span(QQ_j)$ because $Fixing_0 + span(aa_i) subset.eq Fixing_(j-1)$.
+
+  Now that we have $|CC| = |CC LL|$ we get a well-defined ordering $CC LL = (c_1 LL, ..., c_n LL)$.
+  Let us assume this is not a solution ordering and we have for some $i$ that
+  $aa_i LL$ is contained in $Fixing'_(i-1) + span(QQ_i LL)$.
+  It follows that $LL^*(aa_i) = LL^*(bb)$ for some $ bb in Fixing_(i-1) + span(QQ_i)$.
+  As before, we can move the equations around to get this sequence of implications:
+  $
+    & (aa_i - bb)LL ww = 0 quad "for any" quad ww in ker(Fixing_0) \
+    ==> & ker(Fixing_0) subset.eq ker(aa_i - bb) \
+    ==> & aa_i - bb in Fixing_0 \
+    ==> & aa_i in Fixing_(i-1) + span(QQ_i)
+  $
+  The last equation would be a contradiction to the solution ordering $(c_1, ..., c_n)$.
 ]
 
-#theorem("Unsolvable constraints")[
+This proposition is useful because we can then translate statements about solvability fixing ${0}$ to the more general version.
+In some sense,
+we only need to understand inputless Linicrypt programs to understand all Linicrypt programs.
+
+#theorem("Unsolvable constraints - wrong")[
   Let #C be a set of constraints of dimension $d$ which are not solvable.
   Every program #Att making $N$ request to the oracle
   has a winning probability bounded by
   $
-  SolAdv[Att, CC] < N / (|#F|).
+    SolAdv[Att, CC] < N / (|#F|).
   $
-]<lemma-unsolvable>
+]
 
 #remark[
-  I don't know about the constant yet,
-  it might have to be $2N / (|#F|)$ or something else.
+  This is why I thought it could work:
+  The key idea of why this should work is that the condition of being unsolvable
+  is one of the form "vector is contained in subspace".
+  This cannot be broken by a linear map, even when it is not injective.
+  The vector after the mapping stays in the subspace after the mapping.
+
+  *UPDATE:* Yes, but, if the linear map collapses the problematic constraints,
+  then it doesn't matter that it stays in the subspace.
 ]
+
+#remark[
+  *Good news and bad news.*
+  Bad news:
+  It does not work like this.
+  Counterexample:
+  $
+    CC = {mat(1,0,0) |-> mat(0,0,1), mat(0,1,0) |-> mat(0,0,1)}
+  $
+  is unsolvable.
+  But with $LL = mat(1,0; 1,0; 0,1)$,
+  the set $CC LL = { mat(1,0) |-> mat(0,1)}$ is solvable.
+  So solutions of $CC LL$ can be mapped to solutions of $CC$,
+  i.e. vectors of the form $mat(x;x;H(x))$ for $x in FF$.
+
+  The good news is, that it means we still have room for an NP problem.
+
+  *Idea to try to save it:*
+  Call a set of constraints $CC$ completely unsolvable if $CC LL$ is unsolvable for all linear maps $LL$.
+  Then we might be able to prove the Theorem for completely unsolvable sets.
+  This is surprisingly similar in structure to the original conjecture.
+
+  Caveat: This means we still need at least an algorithm for determining if a set of constraints
+  is completely unsolvable.
+  I would guess this problem is then NP-hard.
+]
+
+
+#definition("Completely unsolvable")[
+  A set of constraints $CC$ is called *completely unsolvable* if $CC LL$ is unsolvable for every linear map $LL$.
+]
+
+The relevant maps are those which collapse constraints.
+It is probably enough to consider only the maps $LL: ker(c_i - c_j) arrow.hook Vp$
+recursively.
+
+#theorem("Unsolvable constraints")[
+  Let #C be a set of constraints of dimension $d$ which are completely unsolvable.
+  Every program #Att making $N$ request to the oracle
+  has a winning probability bounded by
+  $
+    SolAdv[Att, CC] < N / (|#F|).
+  $
+]<lemma-unsolvable>
 
 
 #sketch[
@@ -1061,7 +1162,8 @@ A useful fact is that we can avoid working with $Fixing_0$ because of the follow
   and outputs a #vv in $sol(CC)$.
 
   This $T$ might not be injective.
-  We do an inductive proof with the base case being that $T$ is injective.
+  We attempt an inductive proof over $n$ the number of constraints in $CC$.
+  So we assume the theorem holds for all sets $CC$ with $|CC| < n-1$.
 
   When $T$ is injective, we can do the core step of the main proof from @TCC:McQSwoRos19.
   This is the one where we show the result of a call to $H$ was already determined beforehand,
@@ -1077,64 +1179,29 @@ A useful fact is that we can avoid working with $Fixing_0$ because of the follow
   i.e. $T(c_i) = T(c_j)$.
   Then $vv$ is in $ker(c_i - c_j)$.
 
-  We can define the linear map $LL: ker(c_i - c_j) -> Vp$ which is just the embedding.
-  By choosing a basis for $ker(c_i - c_j)$ we can see this as an injective map
-  $LL: #F^(d') -> Vp$.
+  We can define the linear map $LL: ker(c_i - c_j) arrow.hook Vp$ which is just the embedding.
   So this map goes from a smaller state space to the state space of our constraints #C.
-  
-  This map induces a reversed map on the dual spaces $LL^*: Vd -> (#F^(d'))^*$,
+
+  This map induces a map on the dual spaces $LL^*: Vd -> ker(c_i - c_j)^*$,
   i.e. a map acting on variables of a Linicrypt program, or here, the components of the constraints.
   So we can use it to map our constraints to a different set of constraints of smaller dimension $LL^*(CC) = CC LL$.
+  Because the $i$'th and $j$'th constraint collapse under $LL$ we have $|CC LL| <= |CC| - 1$
 
   Because $vv$ is in the image of $LL$,
   the adversary #Att has thus found a solution $ww$ to $CC LL$ where $LL ww = vv$.
-  If $CC LL$ is unsolvable,
-  then we could use the theorem for a smaller dimension.
-
-  #remark[
-    Here I try to prove that $CC LL$ is unsolvable.
-    This proof sketch needs to be cleaned up, it is too convoluted.
-    The key idea of why this should work is that the condition of being unsolvable
-    is one of the form "vector is contained in subspace".
-    This cannot be broken by a linear map, even when it is not injective.
-    The vector after the mapping stays in the subspace after the mapping.
-  ]
-
-  But $CC LL$ being unsolvable follows from the converse of the following:
-  If $CC LL$ is solvable, then #CC is solvable.
-  Let $(c'_i, ..., c'_n')$ be a solution ordering of $CC LL$.
-  This can be seen as a map $CC LL <-> [n']$.
-  We almost get an ordering on $CC$ by the map $CC -> CC LL <-> [n']$.
-  Only the constraints which are collapsed by #L are mapped to the same place.
-  We make an arbitrary choice for these constraints in which way we order them.
-  Then we have an ordering of $CC$ which gives a surjective and increasing map
+  But $CC LL$ is unsolvable because we assumed $CC$ is completely unsolvable.
+  Also, $CC LL$ is completely unsolvable.
+  By induction, we can apply the Theorem for $CC LL$ and
   $
-  phi: [n] <-> CC -> CC LL <-> [n'].
+    SolAdv[Att,CC] <= SolAdv[Att, CC LL] <= N / (|FF|).
   $
-  This map has at least one point in the image where it is not injective.
-  But we can just choose a pseudo-inverse $phi^(-1)$
 
-  Let $i in [n]$.
-  We want to prove the solvability condition $aa_i in.not Fixing_(i-1) + span(QQ)$.
-  Assume towards a contradiction that $aa_i$ is contained in $Fixing_(i-1) + span(QQ)$.
-  Then $aa_i LL$ is contained in $Fixing_(i-1) LL + span(QQ) LL$.
-  But $aa_i LL = aa'_(phi(i))$, $QQ_i LL = QQ'_(phi(i))$ and $Fixing_(i-1) LL = Fixing'_(phi(i-1))$.
-  Therefore this contradicts with the statement "$CC LL$ is solvable with solution ordering $(c'_1, ..., c'_(n'))$".
-
-  $
-    Fixing'_0 = Fixing_0 LL \
-    dots.v \
-    Fixing'_i = Fixing'_(i-1) + span(QQ'_i) + span(aa'_i)
-      = Fixing_(phi^(-1)(i-1)) LL + span(QQ_(phi^(-1)(i)) LL) + span(aa'_(phi^(-1)(i)) LL)
-      = Fixing_(phi^(-1)(i-1)) LL
-  $
-]
-
-Another thing is we can probably relate the solvability of different constraints in mulitple ways.
-One could be
-
-#idea[
-  #C is solvable fixing $Fixing_0$ is equivalent to $CC LL$ is solvable for $LL: ker(I)$
+  The base case for the induction is a set of constraints with just a single constraint
+  $CC = {c} = {(QQ, aa)}$.
+  No matter the dimensionality of $c$,
+  this set is completely unsolvable.
+  This is because $a in span(QQ)$ implies $aa LL in span(QQ LL)$ for any linear map $LL$.
+  For this singleton set any map $T: CC -> [N]$ is injective and we can use the proof above for that case.
 ]
 
 == Interpreting Linicrypt states as quotient spaces
@@ -1240,7 +1307,7 @@ With the spaces $Fixing_i$ from the solvability definition, it's possible to wri
 
   E.g. $CC = {mat(1, 0) |-> mat(0,1), mat(0,1) |-> mat(1,0)}$ can be collapsed via
   $LL = mat(1;1)$ to ${mat(1) |-> mat(1)}$.
-  Therefore solutions to 
+  Therefore solutions to
 
 - Maybe it is cleaner to drop the idea of input matrix $II$ and of the fixing $Fixing_0$ space.
   We could model Linicrypt input as just another set of constraints.

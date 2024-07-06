@@ -51,6 +51,7 @@
 #let QQ = $bold(Q)$
 #let a = $bold(a)$
 #let aa = $bold(a)$
+#let bb = $bold(b)$
 #let i = $bold(i)$
 #let ii = $bold(i)$
 #let kk = $bold(k)$
