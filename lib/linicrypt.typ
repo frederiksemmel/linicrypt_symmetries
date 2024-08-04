@@ -57,6 +57,7 @@
 #let kk = $bold(k)$
 #let xx = $bold(x)$
 #let yy = $bold(y)$
+#let Proj = $bold(P)$
 
 // constraints shortcuts
 #let cs = $italic("cs")$

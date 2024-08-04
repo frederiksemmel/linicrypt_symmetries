@@ -565,7 +565,7 @@ which makes the abstract formulation of the permutation attack from #ref(<conjec
 
 We want to see if the conjecture can correctly reproduce previous classifications of the PGV compression functions.
 Linicrypt can explain most of the previous categorizations,
-except for the Permutation attack and the 5 flawed backward attackable functions.
+xcept for the Permutation attack and the 5 flawed backward attackable functions.
 TODO add a summary of the last section of my master's thesis that goes into detail.
 
 Now I will try to tackle these last missing functions with the help of #ref(<conjecture-no-nonces-v2>).
@@ -1090,7 +1090,7 @@ This proposition is useful because we can then translate statements about solvab
 In some sense,
 we only need to understand inputless Linicrypt programs to understand all Linicrypt programs.
 
-#theorem("Unsolvable constraints - wrong")[
+#theorem("Unsolvable constraints -- wrong")[
   Let #C be a set of constraints of dimension $d$ which are not solvable.
   Every program #Att making $N$ request to the oracle
   has a winning probability bounded by
@@ -1145,21 +1145,66 @@ The relevant maps are those which collapse constraints.
 It is probably enough to consider only the maps $LL: ker(c_i - c_j) arrow.hook Vp$
 recursively.
 
-#theorem("Unsolvable constraints")[
+#theorem("Unsolvable constraints -- not yet useful")[
   Let #C be a set of constraints of dimension $d$ which are completely unsolvable.
   Every program #Att making $N$ request to the oracle
   has a winning probability bounded by
   $
     SolAdv[Att, CC] < N / (|#F|).
   $
-]<lemma-unsolvable>
+]<theorem-unsolvable>
 
+
+
+I want to try to refine this theorem further,
+because like this it is not fully useful.
+The issues are:
+- In the proof of the conjecture, we have $CC LL$, which we want to be either solvable or very hard to solve 
+- If it is not solvable, it might still not be completely unsolvable as in the theorem
+- What we want is for it to be solvable in a subspace (the one where a solution was found),
+  or to be difficult to solve in that subspace
+
+We refine the solvability definition.
+
+#definition("solvable -- fixing and outside")[
+  #C is solvable outside of a subspace $W$ of #Vp fixing a subspace #Fixing of #Vd
+  if there exists a linear map $f: #F^(d') -> Vp$ with $im(f) subset.eq.not W$ s.t.
+  $f^*(#C)$ is solvable fixing $f^*(Fixing)$.
+]
+
+If $W = {0}$ we will just say #C is solvable fixing #Fixing.
+If $Fixing = {0}$ we will just say #C is solvable outside of $W$.
+
+This language of being solvable outside of a subspace is useful in describing collision resistance.
+There we are looking for solutions $vv$ and $vv'$ of constraints,
+under the extra condition that $vv != vv'$.
+This condition can be encoded with this new definition.
+
+Now we can define a security game for finding solutions to a set of constraints #CC.
+The adversary #Att gets access to the constraints $CC$ of dimension $d$,
+the subspaces $Fixing$ and $W$ of #Vd and #Vp respectively.
+The adversary #Att also gets acces to the oracle $H$ such that we can record its queries.
+Then the game randomly samples a vector #ii in #Vp (representing the Linicrypt program input) and passes it to #Att.
+It wins the game by outputting a $vv in sol(CC)$ which fulfills $vv - ii in ker(Fixing)$
+and $vv in.not W$.
+
+The probability of #Att winning this game is written as $SolAdv[Att, CC, Fixing, W]$.
+
+#theorem("Unsolvable constraints V2")[
+  Let #C be a set of constraints of dimension $d$ and $W$ a subspace of #Vp.
+  Assume $CC$ is not solvable outside of $W$.
+  Every program #Att making $N$ request to the oracle
+  has a winning probability bounded by
+  $
+    SolAdv[Att, CC, {0}, W] < N / (|#F|).
+  $
+]<theorem-unsolvable-2>
 
 #sketch[
   We record the queries by #Att in the function $T: #C -> [N]$ which maps
   each constraint onto the time when it was determined by a call to $H$.
   We assume #Att is successful,
-  and outputs a #vv in $sol(CC)$.
+  and outputs a #vv in $sol(CC)$ with $vv in.not W$.
 
   This $T$ might not be injective.
   We attempt an inductive proof over $n$ the number of constraints in $CC$.
@@ -1167,9 +1212,11 @@ recursively.
 
   When $T$ is injective, we can do the core step of the main proof from @TCC:McQSwoRos19.
   This is the one where we show the result of a call to $H$ was already determined beforehand,
-  so #Att has to have been very lucky if we assume $H$ is a random oracle.
-
-  This equation can be derived from assuming #C is not solvable.
+  via an equation where the left is randomly chosen,
+  and the right is a linear combination of known values.
+  This means that #Att was very lucky if we assume $H$ is a random oracle.
+  This equation can be derived from assuming #C is not solvable outside of $W$.
+  Because this means, in particular, #C is not solvable itself.
   No matter what ordering of #C we choose,
   for some $i$ the negated solvability condition implies a linear equation with $aa_i #vv$ on the left side,
   and previously determined values on the right side.
@@ -1178,106 +1225,105 @@ recursively.
   Then let $c_i$ and $c_j$ be two different constraints that are determined at the same time,
   i.e. $T(c_i) = T(c_j)$.
   Then $vv$ is in $ker(c_i - c_j)$.
+  Also, because $vv in.not W$, we know that $ker(c_i - c_j)$ is not contained in $W$.
 
-  We can define the linear map $LL: ker(c_i - c_j) arrow.hook Vp$ which is just the embedding.
+  We can define the linear map $f: ker(c_i - c_j) arrow.hook Vp$ which is just the embedding.
   So this map goes from a smaller state space to the state space of our constraints #C.
 
-  This map induces a map on the dual spaces $LL^*: Vd -> ker(c_i - c_j)^*$,
+  This map induces a map on the dual spaces $f^*: Vd -> ker(c_i - c_j)^*$,
   i.e. a map acting on variables of a Linicrypt program, or here, the components of the constraints.
-  So we can use it to map our constraints to a different set of constraints of smaller dimension $LL^*(CC) = CC LL$.
-  Because the $i$'th and $j$'th constraint collapse under $LL$ we have $|CC LL| <= |CC| - 1$
+  So we can use it to map our constraints to a different set of constraints of smaller dimension $f^*(CC) = CC f$.
+  Because the $i$'th and $j$'th constraint collapse under $f$ we have $|f^*(CC)| <= |CC| - 1$
 
-  Because $vv$ is in the image of $LL$,
-  the adversary #Att has thus found a solution $ww$ to $CC LL$ where $LL ww = vv$.
-  But $CC LL$ is unsolvable because we assumed $CC$ is completely unsolvable.
-  Also, $CC LL$ is completely unsolvable.
-  By induction, we can apply the Theorem for $CC LL$ and
+  Because $vv$ is in the image of $f$ and outside of $W$,
+  the adversary #Att has thus found a solution $ww$ to $f^*(CC)$ where $f ww = vv$
+  and also $ww in.not f^(-1)(W)$.
+
+  But $f^*(CC) := CC f$ is not solvable outside of $f^(-1)(W)$.
+
+  Assume it was, i.e.
+  there is a $g: U -> ker(c_i - c_j)$ such that $CC f g$ is solvable and $im(g) subset.eq.not W$.
+  Then $f g$ is a map as in the definition of $CC$ being solvable outside of $W$.
+  We assumed this was not the case in the theorem statement.
+
+  
+  By induction, we can apply the Theorem for $f^*(CC)$ and $f^(-1)(W)$ to get
   $
-    SolAdv[Att,CC] <= SolAdv[Att, CC LL] <= N / (|FF|).
+    SolAdv[Att,CC] <= SolAdv[Att, f^*(CC)] <= N / (|FF|).
   $
 
-  The base case for the induction is a set of constraints with just a single constraint
+  #remark[
+    Here the actual factor on the right-hand side has to be different I think.
+  ]
+
+  The base case for the induction is a set of constraints with just a single unsolvable constraint
   $CC = {c} = {(QQ, aa)}$.
   No matter the dimensionality of $c$,
   this set is completely unsolvable.
   This is because $a in span(QQ)$ implies $aa LL in span(QQ LL)$ for any linear map $LL$.
-  For this singleton set any map $T: CC -> [N]$ is injective and we can use the proof above for that case.
+  For this singleton set any map $T: CC -> [N]$ is injective and we can use the original proof for that case.
 ]
 
-== Interpreting Linicrypt states as quotient spaces
 
-What I dislike about this type of definition is that it uses the actual matrices and rows directly.
-This definition should be independent of the chosen basis for these matrices,
-but from the definition, it is not immediately clear.
+Maybe we can use a general theorem like the unsolvability theorem to replace the proofs
+for collision structure and second preimage characterization.
+The key step in the proof of unsolvability is the same as in those proofs.
 
-I wanted to see if changing the perspective on Linicrypt programs could help.
-We often argue about "fixing some variables" and solving for the others in Linicrypt proofs.
-A way to naturally describe this in Linear algebra terms is with quotient spaces.
-
-For example, fixing the input variables for a Linicrypt program, means we have determined $#I#vv$ and leave the rest yet undetermined.
-We could also say we have chosen a concrete equivalence class $[#vv]$ of the quotient space:
+Let $#P$ be a Linicrypt program.
+We can duplicate its algebraic representation such that the vectors are completely separate.
+One copy has all zeros on the right of the row vectors,
+and the other has all zeros on the left.
+Then we can merge the algebraic representations,
+by doing a union on the constraints,
+adding the input spaces,
+and concatenating the output matrix.
+Call this program $#P _"join"$.
+We can look at a map $f$ that has as its image the states in $FF^(2d)$ where the output
+of $#P _"join"$ has both halves equal. i.e.:
 $
-  quotient(#F^d, ker(#I)).
+  OO_"join" = mat(OO_1; OO_2), quad CC_"join" = CC_1 union CC_2, quad Fixing_"join" = Fixing_1 + Fixing_2 \
+  f: ker(OO _1 - OO _2) arrow.hook FF^(2d)
 $
-In this space $[#vv] = [#vv']$ for two vectors #vv and $#vv'$ iff $#I#vv = #I#vv'$.
+We define $Proj_1$ and $Proj_2$ to be the projections from $F^(2d)$ to either the first n dimensions or the second n.
+So $Proj_1$ and $Proj_2$ recover the solutions to $CC$ from the first $n$ variables, or the second $n$ variables respectively.
 
-For (deterministic) Linicrypt programs,
-there is a unique representative of $[vv]$ such that #vv is in $sol(C)$ when we quotient with $ker(#I)$.
-This just means that for a given input, there is a deterministic way to compute each variable of the Linicrypt program.
-This "way" is a call to an oracle and linear combinations.
+Then finding a $vv in sol(CC_"join" f)$ with $vv in.not ker(Proj_1 - Proj_2)$ means finding collision for $#P$.
 
-The solvability of constraints in this picture looks like a chain of maps from quotient spaces.
-It starts with $quotient(#F^d, ker(#I))$ and ends at the quotient space where every base variable is determined.
-In the canonical representation the base variables are $#i _1, ..., #i _k, #a _1, ..., #a _n$.
-$
-  quotient(#F^d, ker(#I)) quad --> quad
-  quotient(#F^d, (ker(#I) sect ker(#a _1))) quad --> quad
-  ... quad --> quad
-  quotient(#F^d, (ker(#I) sect ker(#a _1) ... sect ker(#a _n)))
-$
+#corollary("Collisions in general")[
+  $CC_"join" f$ is solvable outside of $ker(Proj_1 - Proj_2)$
+  is equivalent to $PP$ being susceptible to an easy attack against collision resistance.
+]
 
-TODO: fix the above. It doesn't work like this.
-With the spaces $Fixing_i$ from the solvability definition, it's possible to write down compactly.
+Now that we have a formal definition of solutions outside of a subspace,
+we can try to prove it.
+
+#sketch[
+  Assume that #Att finds a solution easily.
+  Easy means with a higher probability than in the unsolvability theorem.
+  Then that theorem gives us a map $g: U -> ker(OO_1 - OO_2)$ such that $CC_"join" f g$
+  is solvable and $im(g) subset.eq.not ker(Proj_1 - Proj_2)$.
+  So a solution to $CC_"join" f g$ is a solution to $CC_"join"$ when mapped by $f g$.
+  Let $vv$ be such a solution to $CC_"join"$ with $vv in.not ker(Proj_1 - Proj_2)$.
+  By construction then $Proj_1 vv$ and $Proj_2 vv$ are solutions to $CC$ with $Proj_1 vv != Proj_2 vv$.
+
+  On the reverse side, assume there is such an $g$ as above because $CC_"join" f$ is solvable outside of $ker(Proj_1 - Proj_2)$.
+  Then computing solutions to $CC_"join"$ takes at most $2n$ queries to $H$.
+  As before, a solution outside of $ker(Proj_1 - Proj_2)$ leads to a collision.
+  This means we have found an attack on collision resistance.
+]
 
 #remark[
-  I don't think this is very helpful in the end.
-  It seems to be just doing everything in quotient spaces, instead of in the dual space (with row vectors).
-  There is an isomorphism theorem that might underpin the idea that this perspective is equivalent to the original.
+  In this proof, in the last step, I need to actually find a solution outside of $W$ just given the solution ordering.
+  There we need to be a bit careful.
+  Maybe the oracle $H$ is not random, and actually causes all solutions to lie on the subspace $W$ again.
+  But for a random $W$ the solution space is never contained in a subspace.
 ]
 
+=== TODOs here
+- Write down lots of examples to see how this works in all the special cases
+- Prove that a solution ordering like the above leads to a case from the conjecture
+
 == Notes and ideas, in random order
-
-- Maybe we can use a general theorem like the unsolvability theorem to replace the proofs
-  for collision structure and second preimage characterization.
-  The key step in the proof of unsolvability is the same as in those proofs.
-
-  Let $#P$ be a linicrypt program.
-  We can duplicate its algebraic representation such that the vectors are completely separate.
-  One copy has all zeros on the right of the row vectors,
-  the other all zeros on the left.
-  Then we can merge the algebraic representations,
-  by doing a union on the constraints,
-  adding the input spaces,
-  and concatenating the output matrix.
-  Call this program $#P _"joined"$.
-  We can look at a map $LL$ that has as its image the states in $FF^(2d)$ where the output
-  of $#P _"joined"$ has both halfes equal. i.e.:
-  $
-    OO_"joined" = mat(OO_1; OO_2), quad CC_"joined" = CC_1 union CC_2, quad Fixing_"joined" = Fixing_1 + Fixing_2 \
-    LL: ker(OO _1 - OO _2) arrow.hook FF^(2d)
-  $
-
-  Then finding a $vv in sol(CC_"joined" LL)$ with $vv in.not ker(II_1 - II_2)$ means finding collision to $PP$.
-  It would be super cool if the reverse is also true;
-  if all the easily findable collisions can be found by this procedure.
-  We could try to prove:
-
-  #conjecture("Collisions in general")[
-    $CC_"joined" LL$ is solvable "outside" of $ker(II_1 - II_2)$
-    is equivalent to $PP$ being susceptible to an easy attack agains collision resistance.
-  ]
-
-
 - Second preimage resistance and collision resistance loose their relationsship for unsolvable constraints.
   We can find unsolvable constraints where its easy to find a second solution, if we are given a solution.
   But its hard to find a solution in the first place.
@@ -1325,7 +1371,6 @@ With the spaces $Fixing_i$ from the solvability definition, it's possible to wri
     With lots of programs,
     it would be ok to start computing constraints without knowing all the input.
     This is the case for merkle damgard for example.
-
 
 = Next steps
 
