@@ -1159,7 +1159,7 @@ recursively.
 I want to try to refine this theorem further,
 because like this it is not fully useful.
 The issues are:
-- In the proof of the conjecture, we have $CC LL$, which we want to be either solvable or very hard to solve 
+- In the proof of the conjecture, we have $CC LL$, which we want to be either solvable or very hard to solve
 - If it is not solvable, it might still not be completely unsolvable as in the theorem
 - What we want is for it to be solvable in a subspace (the one where a solution was found),
   or to be difficult to solve in that subspace
@@ -1179,6 +1179,8 @@ This language of being solvable outside of a subspace is useful in describing co
 There we are looking for solutions $vv$ and $vv'$ of constraints,
 under the extra condition that $vv != vv'$.
 This condition can be encoded with this new definition.
+
+TODO more explicit.
 
 Now we can define a security game for finding solutions to a set of constraints #CC.
 The adversary #Att gets access to the constraints $CC$ of dimension $d$,
@@ -1246,7 +1248,7 @@ The probability of #Att winning this game is written as $SolAdv[Att, CC, Fixing,
   Then $f g$ is a map as in the definition of $CC$ being solvable outside of $W$.
   We assumed this was not the case in the theorem statement.
 
-  
+
   By induction, we can apply the Theorem for $f^*(CC)$ and $f^(-1)(W)$ to get
   $
     SolAdv[Att,CC] <= SolAdv[Att, f^*(CC)] <= N / (|FF|).
@@ -1319,9 +1321,146 @@ we can try to prove it.
   But for a random $W$ the solution space is never contained in a subspace.
 ]
 
-=== TODOs here
+=== TODOs this section
 - Write down lots of examples to see how this works in all the special cases
 - Prove that a solution ordering like the above leads to a case from the conjecture
+- Pederson Hash
+
+=== Examples
+
+In @TCC:McQSwoRos19 the authors describe a Linicrypt program which is not collision resistant due to collapse of constraints.
+#align(center + horizon)[
+  #grid(
+    columns: 2,
+    gutter: 2em,
+    algo(
+      // title: [$#P _sans("collapse")$], parameters: ($x$, $y$),
+      header: $underline(#P (x,y))$,
+      line-numbers: false, inset: 0.7em, fill: none, block-align: left,
+    )[
+      $a_1 &:= H(x)$ \
+      $a_2 &:= H(a_1)$ \
+      $a_3 &:= H(y)$ \
+      return $a_2 - a_3$
+    ],
+    algo(
+      header: $underline(sans("Algebraic Representation of ") #P (x,y))$,
+      line-numbers: false,
+      inset: 0.7em,
+      fill: none,
+      stroke: 0pt,
+      block-align: left,
+    )[
+      #v(0.5em)
+      $bold(O) &:= mat(0,0,0,1,-1) \
+        bold(I) &:= mat(1,0,0,0,0;
+                       0,1,0,0,0)$ \
+      $#C = {
+        &mat(1,0,0,0,0) &|-> mat(0,0,1,0,0), \
+        &mat(0,0,1,0,0) &|-> mat(0,0,0,1,0), \
+        &mat(0,1,0,0,0) &|-> mat(0,0,0,0,1)
+      }$
+    ],
+  )
+]
+
+We define $OO_1, OO_2, CC_1, CC_2, Proj_1$ and $Proj_2$ as in the corollary.
+$
+  CC_"join" = {
+    &mat(1,0,0,0,0,0,0,0,0,0) &|-> mat(0,0,1,0,0,0,0,0,0,0), \
+    &mat(0,0,1,0,0,0,0,0,0,0) &|-> mat(0,0,0,1,0,0,0,0,0,0), \
+    &mat(0,1,0,0,0,0,0,0,0,0) &|-> mat(0,0,0,0,1,0,0,0,0,0), \
+    &mat(0,0,0,0,0,1,0,0,0,0) &|-> mat(0,0,0,0,0,0,0,1,0,0), \
+    &mat(0,0,0,0,0,0,0,1,0,0) &|-> mat(0,0,0,0,0,0,0,0,1,0), \
+    &mat(0,0,0,0,0,0,1,0,0,0) &|-> mat(0,0,0,0,0,0,0,0,0,1), \
+    }
+$
+Let $f$ be the empedding of the subspace $ker(OO_1 - OO_2)$ into #Vp.
+This linear map can be described by a matrix $MM_f$ of dimension $10 times 9$ if we just choose a basis of $ker(OO_1 - OO_2)$.
+$
+  MM_f = mat(
+     1, 0, 0, 0, 0, 0, 0, 0, 0;
+     0, 1, 0, 0, 0, 0, 0, 0, 0;
+     0, 0, 1, 0, 0, 0, 0, 0, 0;
+     0, 0, 0, 1, 0, 0, 0, 0, 1;
+     0, 0, 0, 1, 0, 0, 0, 0, 0;
+     0, 0, 0, 0, 1, 0, 0, 0, 0;
+     0, 0, 0, 0, 0, 1, 0, 0, 0;
+     0, 0, 0, 0, 0, 0, 1, 0, 0;
+     0, 0, 0, 0, 0, 0, 0, 1, 1;
+     0, 0, 0, 0, 0, 0, 0, 1, 0;
+  )
+$
+
+This matrix has been constructed by first choosing a basis of $ker(O)$ and mapping it
+to $FF^(2d)$ by setting the first resp. second halve to 0.
+These make up 6 basis vectors.
+The last basis vector is chosen to be linear independent of the rest
+while still being in $ker(Proj_1 - Proj_2) subset.eq ker(OO_1 - OO_2)$.
+
+This linear map leads to the partially collapsed constraints:
+$
+  CC_"join" MM_f = {
+    &mat(1,0,0,0,0,0,0,0,0) |-> mat(0,0,1,0,0,0,0,0,0)&, \
+    &mat(0,0,1,0,0,0,0,0,0) |-> mat(0,0,0,1,0,0,0,0,1)&, \
+    &mat(0,1,0,0,0,0,0,0,0) |-> mat(0,0,0,1,0,0,0,0,0)&, \
+    &mat(0,0,0,0,1,0,0,0,0) |-> mat(0,0,0,0,0,0,1,0,0)&, \
+    &mat(0,0,0,0,0,0,1,0,0) |-> mat(0,0,0,0,0,0,0,1,1)&, \
+    &mat(0,0,0,0,0,1,0,0,0) |-> mat(0,0,0,0,0,0,0,1,0)& }
+$
+These constraints are not solvable anymore,
+as the set of answer vectors alone is not linearly independent.
+
+But they can be solved by further collapsing variables.
+We can collapse the answer vectors of lines 2 and 3,
+i.e. we collapse $f^*(aa^1_2)$ with $f^*(aa^1_3)$.
+(Here I write $aa^i_j$ for the j'th answer vector $aa_j$ of the original
+$PP$ either in the first or second half of #Vp depending on $i in {1,2}$.)
+So we construct a map going to the subspace where these vectors collapse.
+This is $ker(mat(0,0,0,1,0,0,0,0,1) - mat(0,0,0,1,0,0,0, 0,0)) = ker(mat(0,0,0,0,0,0,0,0,1))$.
+
+#remark[
+  Its interesting that $f^*(bold(o)_1) = f^*(bold(o)_2) = mat(0,0,0,0,0,0,0,0,1)$.
+  So collapsing these two constraints is the same as setting the output to 0.
+  In this case this makes sense,
+  because 0 is the only output for which it is hard to find a collision.
+]
+
+Looking back at the original linicrypt program,
+this subspace are the states of the program for which the query $H(y)$ and $H(H(x))$ collapse.
+
+Let $g: ker(aa^1_2 - aa^1_3) sect ker(OO_1 - OO_2) arrow.hook Vp$ be the embedding.
+Then a matrix representing this map is
+$
+  MM_f = mat(
+     1, 0, 0, 0, 0, 0, 0, 0;
+     0, 1, 0, 0, 0, 0, 0, 0;
+     0, 0, 1, 0, 0, 0, 0, 0;
+     0, 0, 0, 1, 0, 0, 0, 0;
+     0, 0, 0, 1, 0, 0, 0, 0;
+     0, 0, 0, 0, 1, 0, 0, 0;
+     0, 0, 0, 0, 0, 1, 0, 0;
+     0, 0, 0, 0, 0, 0, 1, 0;
+     0, 0, 0, 0, 0, 0, 0, 1;
+     0, 0, 0, 0, 0, 0, 0, 1;
+  )
+$
+
+Only the last column is removed versus $MM_f$ because it lies outside of $ker(aa^1_2 - aa^1_3)$.
+The collapsed set of constraints becomes:
+$
+  CC_"join" MM_g = {
+    &mat(1,0,0,0,0,0,0,0) |-> mat(0,0,1,0,0,0,0,0)&, \
+    &mat(0,0,1,0,0,0,0,0) |-> mat(0,0,0,1,0,0,0,0)&, \
+    &mat(0,1,0,0,0,0,0,0) |-> mat(0,0,0,1,0,0,0,0)&, \
+    &mat(0,0,0,0,1,0,0,0) |-> mat(0,0,0,0,0,0,1,0)&, \
+    &mat(0,0,0,0,0,0,1,0) |-> mat(0,0,0,0,0,0,0,1)&, \
+    &mat(0,0,0,0,0,1,0,0) |-> mat(0,0,0,0,0,0,0,1)& }
+$
+
+
+
+The running example from @TCC:McQSwoRos19 is
 
 == Notes and ideas, in random order
 - Second preimage resistance and collision resistance loose their relationsship for unsolvable constraints.

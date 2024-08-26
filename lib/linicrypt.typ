@@ -58,6 +58,7 @@
 #let xx = $bold(x)$
 #let yy = $bold(y)$
 #let Proj = $bold(P)$
+#let MM = $bold(M)$
 
 // constraints shortcuts
 #let cs = $italic("cs")$
