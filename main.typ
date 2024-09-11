@@ -1409,20 +1409,27 @@ TODO flesh out these ideas:
     - Maybe some programs force collapse to $mat(0) |-> mat(0)$ ($H(0) = 0$) and some only $mat(1) |-> mat(1) $ ($H(x) = x$)
   - Start a search for best compression function from ideal ciphers
 
+== Meeting 11.09.2024
+- No work these two weeks, only lots of excuses :)
+- Timeline paper. October 3 not possible...
+  - Submission deadline Crypto 2025 in February seems good
+
+- Formal conferences is TCC and Eurocrypt
+  - TCC in deadline in May probably
+  - Crypto is usually more real application focused, would need to find a really good application for that
+
 = Next steps
 
-The SymPy Linicrypt implementation has shown a lot of potential.
-I want to continue this path a bit more because it will help a lot with
-generating interesting applications of the theory.
-The todo-list might go like this:
-- Implement the collapse attack.
-  Currently, I tested only the SymPy equations for cycling the constraints.
-- Generate a Linicrypt-driven categorization of the attacks
+== Attack side
+=== Short term
+- Try to model fixed point attacks like this.
+  Additionally to the solvability rules we add: $mat(xx) -> mat(xx)$ is solvable fixing $Fixing$ if $xx$ is not in $Fixing$ 
+- Apply this to the PGV compression functions and see which are insecure
+
+== Longer term
+- derive a linicrypt categorization of the pgv functions
 
 
-This is the Todo list for everything related to the security side:
-- Write down the proof attempt for the security side of #ref(<conjecture-no-nonces-v2>)
-- Continue work on the security side: What can we say about unsolvable #C? Can this help to generalize the security proofs?
-- Maybe (and this is a big maybe) we can then base the security proofs on weaker conditions than the Random Oracle Model.
-  What are the exact requirements on $H$ such that unsolvable constraints #C are "hard" to solve?
-- Start to work on the "unsolvable #C = loops in #C" idea.
+
+== Security side
+- Formalize proofs of unsolvability and the corollary
